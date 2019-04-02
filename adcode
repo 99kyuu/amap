@@ -1,0 +1,39 @@
+高德数据导入mysql,顺带父子关系
+高德最新数据下载地址 https://lbs.amap.com/api/webservice/download 
+
+transfer excel to sql file  https://sqlizer.io
+修改insert 语句,和下表一致 INSERT INTO amap (name, adcode, citycode) values ...
+
+mysql table struct 
+CREATE TABLE amap (
+  id int(10) NOT NULL AUTO_INCREMENT,
+  name varchar(50) NOT NULL COMMENT '名称',
+  adcode int(11) NOT NULL,
+  citycode char(5) NOT NULL DEFAULT '',
+  parent int(10) NOT NULL DEFAULT '0',
+  PRIMARY KEY (id),
+  UNIQUE KEY adcode (adcode)
+) ENGINE=InnoDB  DEFAULT CHARSET=utf8 COMMENT='amap_adcode';
+
+
+first:
+将区号29改为029
+update amap set citycode = concat(0,citycode) where citycode > 0 and citycode < 1000;
+
+second 
+ 查出来所有的省,行政区,直辖市
+select * from amap where substr(adcode,3,4) = '0000' and adcode not in (100000,900000);
+更新parent为中国的adcode 100000
+update amap set parent = 100000 where substr(adcode,3,4) = '0000' and adcode not in (100000,900000);
+
+third:
+将市的parent更新为省的adcode
+update  amap set parent = concat(substr(adcode,1,2),'0000')  where substr(adcode,5,2) = '00' and parent = 0 and adcode not in (100000,900000);
+
+last:
+将区县的parent更新为市的adcode
+update  amap set parent = concat(substr(adcode,1,4),'00') where substr(adcode,5,2) != '00' ;
+
+备注:
+1.adcode为442101的东沙群岛修改parent为440000,属于广东省.或者直接将这条数据干掉;
+2.行政区没有市,所以只有两级.为行政区和区
