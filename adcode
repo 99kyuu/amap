@@ -20,10 +20,8 @@ first:
 将区号29改为029
 update amap set citycode = concat(0,citycode) where citycode > 0 and citycode < 1000;
 
-second 
- 查出来所有的省,行政区,直辖市
-select * from amap where substr(adcode,3,4) = '0000' and adcode not in (100000,900000);
-更新parent为中国的adcode 100000
+second:
+将所有的省,行政区,直辖市的parent更新为中国的adcode 100000
 update amap set parent = 100000 where substr(adcode,3,4) = '0000' and adcode not in (100000,900000);
 
 third:
